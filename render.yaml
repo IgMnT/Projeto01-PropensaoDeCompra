@@ -1,14 +1,12 @@
-# Render deployment configuration
-# This file is automatically recognized by Render
-
-# Build settings
-BUILD_COMMAND=pip install -r requirements.txt
-START_COMMAND=python app.py
-
-# Environment variables for Render
-PYTHON_VERSION=3.11.0
-PORT=5000
-
-# Application settings
-FLASK_ENV=production
-FLASK_DEBUG=False
+services:
+  - type: web
+    name: health-insurance-api
+    env: python
+    buildCommand: pip install -r requirements.txt && python train_model.py
+    startCommand: python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        value: 5000
+    plan: free

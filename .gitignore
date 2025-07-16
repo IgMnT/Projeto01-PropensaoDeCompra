@@ -176,7 +176,10 @@ Desktop.ini
 *~
 
 # Project specific
-*.pkl
+# Large model files (will be generated during deploy)
+model/*.pkl
+# Allow parameter files (they are small)
+!parameter/*.pkl
 *.joblib
 *.h5
 *.hdf5

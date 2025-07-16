@@ -67,16 +67,16 @@ class HealthInsurance( object ):
 
         ## 5.3. Encoding
         # Target Encoding for gender
-        df5['gender'] = df5['gender'].map( self.gender_encoder )
+        df5['gender'] = df5['gender'].map( self.gender_encoder ).fillna(0.5)
         
         # Target Encoding for region_code
-        df5['region_code'] = df5['region_code'].map( self.region_code_encoder )
+        df5['region_code'] = df5['region_code'].map( self.region_code_encoder ).fillna(0.5)
         
         # One Hot Encoding for vehicle_age
         df5 = pd.get_dummies( df5, prefix='vehicle_age', columns=['vehicle_age'] )
         
         # Frequency Encoding for policy_sales_channel
-        df5['policy_sales_channel'] = df5['policy_sales_channel'].map( self.policy_sales_channel_encoder )
+        df5['policy_sales_channel'] = df5['policy_sales_channel'].map( self.policy_sales_channel_encoder ).fillna(0.5)
         
         # Select columns used in the model
         cols_selected = ['annual_premium', 'age', 'vintage', 'region_code', 'policy_sales_channel', 'previously_insured', 'vehicle_damage']

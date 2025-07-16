@@ -151,6 +151,10 @@ if __name__ == "__main__":
     print("Testando API local...")
     test_api("http://localhost:5000")
     
-    # Descomente para testar em produção
+    # Teste de produção - descomente e atualize com sua URL do Render
     # print("\nTestando API em produção...")
-    # test_api("https://your-app-name.onrender.com")
+    # test_api("https://health-insurance-api-xxxx.onrender.com")
+    
+    # Exemplos de URLs comuns do Render:
+    # test_api("https://health-insurance-propensity-api.onrender.com")
+    # test_api("https://propensao-compra-api.onrender.com")

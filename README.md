@@ -67,23 +67,29 @@ Endpoint principal para fazer predições.
 }
 ```
 
-## Deploy no Render
+### Deploy no Render
 
-### Pré-requisitos
+#### ⚠️ IMPORTANTE: Modelo é treinado automaticamente durante o deploy
+
+Este projeto treina o modelo automaticamente durante o deploy no Render, resolvendo o problema de arquivos grandes de modelo.
+
+#### Pré-requisitos
 1. Conta no GitHub
 2. Conta no Render
-3. Arquivos do modelo treinado salvos nas pastas corretas
+3. Os dados de treino (`data/train.csv`) ou dados de exemplo (`data/sample_train.csv`)
 
-### Passos para Deploy
+#### Passos para Deploy
 
 1. **Prepare o repositório:**
-   - Faça commit de todos os arquivos para o GitHub
-   - Certifique-se de que os arquivos do modelo estão na pasta `model/`
-   - Certifique-se de que os transformadores estão na pasta `parameter/`
+   ```bash
+   git add .
+   git commit -m "Health Insurance API ready for Render deployment"
+   git push origin main
+   ```
 
 2. **Configure no Render:**
    - Conecte seu repositório GitHub ao Render
-   - **Build Command:** `pip install -r requirements.txt`
+   - **Build Command:** `pip install -r requirements.txt && python train_model.py`
    - **Start Command:** `python app.py`
    - **Environment:** Python 3
 
@@ -92,8 +98,24 @@ Endpoint principal para fazer predições.
    - `PORT`: 5000 (automaticamente configurado pelo Render)
 
 4. **Deploy:**
-   - Faça o deploy e aguarde a build
+   - O modelo será treinado automaticamente durante o build
+   - Aguarde a build (pode levar alguns minutos)
    - Sua API estará disponível em: `https://your-app-name.onrender.com`
+
+#### Como funciona o treinamento automático:
+
+1. **Durante o build:** O script `train_model.py` é executado
+2. **Se `data/train.csv` existir:** Usa os dados completos para treinar
+3. **Se só `data/sample_train.csv` existir:** Usa dados de exemplo
+4. **Se nenhum dado existir:** Cria um modelo dummy para demonstração
+5. **Durante o start:** O `app.py` verifica se o modelo existe e o carrega
+
+#### Vantagens desta abordagem:
+
+- ✅ Resolve o problema de arquivos grandes no Git
+- ✅ Modelo sempre atualizado com os dados mais recentes
+- ✅ Funciona mesmo sem dados (modo demo)
+- ✅ Deploy mais rápido (não precisa fazer upload de arquivos grandes)
 
 ### Deploy Automatizado
 
@@ -212,3 +234,64 @@ A API retorna os mesmos dados de entrada mais um campo `score` que representa a 
 - Health check: `GET /health`
 - Logs disponíveis no dashboard do Render
 - Métricas de performance no Render
+
+## 🔧 Troubleshooting
+
+### Erro: "FileNotFoundError: model/model_health_insurance.pkl"
+
+**Causa:** O modelo não foi treinado durante o deploy.
+
+**Solução:**
+1. Verifique se o build command inclui: `python train_model.py`
+2. Certifique-se de que os dados estão disponíveis
+3. Verifique os logs do Render para erros durante o treinamento
+
+### Erro durante o treinamento
+
+**Causa:** Problemas com os dados ou dependências.
+
+**Solução:**
+1. Verifique se o arquivo `data/train.csv` existe e é válido
+2. O sistema criará um modelo dummy se não conseguir treinar
+3. Verifique os logs do Render para detalhes
+
+### API retorna erro 500
+
+**Causa:** Problema com o modelo ou transformadores.
+
+**Solução:**
+1. Teste o endpoint `/health` primeiro
+2. Verifique se todos os arquivos .pkl foram criados
+3. Teste com dados de exemplo válidos
+
+### Teste local não funciona
+
+**Solução:**
+```bash
+# Treinar modelo localmente
+python train_model.py
+
+# Testar API
+python app.py
+
+# Em outro terminal
+python test_api.py
+```
+
+### Build demora muito no Render
+
+**Causa:** Treinamento do modelo pode ser demorado.
+
+**Solução:**
+- Use dados de exemplo menores para testes
+- Considere usar um modelo mais simples
+- Monitore os logs do Render
+
+### Dados não encontrados
+
+**Solução:**
+1. Coloque `data/train.csv` no repositório
+2. Ou use `data/sample_train.csv` fornecido
+3. O sistema criará modelo dummy se necessário
+
+## 🔍 Monitoramento
