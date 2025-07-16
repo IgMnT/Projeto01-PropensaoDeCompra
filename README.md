@@ -1,6 +1,4 @@
-Claro\! Com base no seu notebook Jupyter, preparei um README completo e profissional para o seu projeto no GitHub. Ele destaca a metodologia, os desafios de implantação e a solução final.
 
------
 
 # Health Insurance Cross-Sell Prediction
 
