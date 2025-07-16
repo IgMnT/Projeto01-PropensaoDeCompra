@@ -1,227 +1,77 @@
-# Health Insurance Propensity API
+Claro\! Com base no seu notebook Jupyter, preparei um README completo e profissional para o seu projeto no GitHub. Ele destaca a metodologia, os desafios de implantação e a solução final.
 
-Esta API prediz a propensão de clientes comprarem seguro de saúde com base em características demográficas e de veículos.
+-----
 
-## Estrutura do Projeto
+# Health Insurance Cross-Sell Prediction
 
-```
-health-insurance-api/
-├── app.py                          # Flask application
-├── requirements.txt                # Python dependencies
-├── README.md                       # This file
-├── health_insurance/
-│   ├── __init__.py
-│   └── HealthInsurance.py         # Class implementation
-├── model/
-│   └── model_health_insurance.pkl # Trained model
-└── parameter/
-    ├── annual_premium_scaler.pkl
-    ├── age_scaler.pkl
-    ├── vintage_scaler.pkl
-    ├── gender_encoder.pkl
-    ├── region_code_encoder.pkl
-    └── policy_sales_channel_encoder.pkl
-```
+Este projeto tem como objetivo desenvolver um modelo de machine learning para prever a propensão de clientes de um seguro de automóvel a se interessarem também por um seguro de saúde. A solução final é uma API REST implementada com Flask e hospedada na plataforma Render.
 
-## Endpoints
+O problema de negócio consiste em otimizar a campanha de cross-sell, direcionando os esforços de marketing para os clientes com maior probabilidade de adesão, aumentando a eficiência e o ROI da campanha.
 
-### GET /
-Página inicial da API com informações básicas.
+## 1\. Estratégia da Solução
 
-### GET /health
-Endpoint de health check que retorna o status da API.
+O projeto seguiu uma metodologia baseada no CRISP-DM, com as seguintes etapas:
 
-### POST /healthinsurance/predict
-Endpoint principal para fazer predições.
+1.  **Descrição e Limpeza dos Dados:** Análise inicial das variáveis, renomeação de colunas para o padrão `snake_case` e verificação de dados faltantes.
+2.  **Feature Engineering:** Transformação de variáveis categóricas (`Vehicle_Age` e `Vehicle_Damage`) para um formato numérico e mais interpretável.
+3.  **Análise Exploratória de Dados (EDA):** Investigação de hipóteses e insights através da análise univariada e bivariada, buscando entender o comportamento das variáveis e sua relação com a variável resposta (`Response`).
+4.  **Preparação dos Dados:** Aplicação de diversas técnicas de pré-processamento para otimizar a performance dos modelos:
+      * **Normalização/Escalonamento:** `StandardScaler` e `MinMaxScaler` em variáveis numéricas.
+      * **Encoding:** `Target Encoding`, `One-Hot Encoding` e `Frequency Encoding` em variáveis categóricas.
+5.  **Seleção de Features:** Uso do `ExtraTreesClassifier` para ranquear a importância das features e selecionar as mais relevantes para o modelo.
+6.  **Modelagem e Avaliação:** Treinamento e avaliação de múltiplos algoritmos de classificação, como K-Nearest Neighbors (KNN), Random Forest e Regressão Logística, com foco em métricas de negócio como Acurácia, Recall e Precisão.
+7.  **Deploy em Produção:** Encapsulamento de todo o pipeline em uma classe Python e criação de uma API com Flask para disponibilizar as predições.
 
-**Formato de entrada (JSON):**
-```json
-{
-    "Gender": "Male",
-    "Age": 44,
-    "Driving_License": 1,
-    "Region_Code": 28.0,
-    "Previously_Insured": 0,
-    "Vehicle_Age": "< 1 Year",
-    "Vehicle_Damage": "Yes",
-    "Annual_Premium": 40454.0,
-    "Policy_Sales_Channel": 26.0,
-    "Vintage": 217
-}
-```
+## 2\. Top 3 Insights da Análise de Dados
 
-**Formato de saída (JSON):**
-```json
-{
-    "Gender": "Male",
-    "Age": 44,
-    "Driving_License": 1,
-    "Region_Code": 28.0,
-    "Previously_Insured": 0,
-    "Vehicle_Age": "< 1 Year",
-    "Vehicle_Damage": "Yes",
-    "Annual_Premium": 40454.0,
-    "Policy_Sales_Channel": 26.0,
-    "Vintage": 217,
-    "score": 0.85
-}
-```
+1.  **Clientes Sem Seguro Prévio são o Alvo Principal:** A análise mostrou que **100% dos clientes que já possuíam um seguro de veículo não têm interesse** no seguro de saúde (`previously_insured = 1`). Em contrapartida, clientes que **não tinham seguro prévio representam a totalidade dos interessados**. Isso torna a variável `previously_insured` o fator mais importante na predição.
+2.  **Danos no Veículo Aumentam a Propensão:** Clientes que já tiveram o veículo danificado (`Vehicle_Damage = Yes`) demonstram uma propensão de compra **24 vezes maior** do que aqueles que nunca tiveram o veículo danificado.
+3.  **Idade e Canal de Venda:** A propensão de compra aumenta significativamente para clientes na faixa etária de **30 a 60 anos**. Além disso, certos canais de venda (`Policy_Sales_Channel`) concentram a grande maioria dos clientes interessados, sugerindo que a otimização da campanha deve focar nesses canais.
 
-### Deploy no Render
+## 3\. Modelo de Machine Learning
 
-#### ⚠️ IMPORTANTE: Modelo é treinado automaticamente durante o deploy
+Foram testados três modelos: KNN, Random Forest e Regressão Logística.
 
-Este projeto treina o modelo automaticamente durante o deploy no Render, resolvendo o problema de arquivos grandes de modelo.
+  - **Random Forest** apresentou a melhor acurácia geral (86.52%), porém com baixo recall (12.18%), indicando dificuldade em identificar os clientes interessados devido ao grande desbalanceamento de classes.
+  - **Regressão Logística** foi o modelo escolhido para o deploy final devido aos desafios de memória na plataforma Render. Embora a versão padrão tenha apresentado performance similar, a versão com pesos balanceados (`class_weight='balanced'`) atingiu um **Recall de 97.64%**, sendo ideal para o negócio (maximizar a identificação de potenciais clientes), mesmo com uma precisão menor (25.38%).
 
-#### Pré-requisitos
-1. Conta no GitHub
-2. Conta no Render
-3. Os dados de treino (`data/train.csv`) ou dados de exemplo (`data/sample_train.csv`)
+| Modelo | Acurácia | Recall | Precisão |
+| :--- | :--- | :--- | :--- |
+| Random Forest | 86.52% | 12.18% | 36.35% |
+| Regressão Logística (Balanceada) | 64.26% | 97.64% | 25.38% |
 
-#### Passos para Deploy
+## 4\. Desafios e Soluções no Deploy
 
-1. **Prepare o repositório:**
-   ```bash
-   git add .
-   git commit -m "Health Insurance API ready for Render deployment"
-   git push origin main
-   ```
+A implantação na plataforma Render apresentou desafios significativos que moldaram a solução final:
 
-2. **Configure no Render:**
-   - Conecte seu repositório GitHub ao Render
-   - **Build Command:** `pip install -r requirements.txt && python train_model.py`
-   - **Start Command:** `python app.py`
-   - **Environment:** Python 3
+1.  **Problema de Tamanho do Modelo:** O arquivo do modelo Random Forest (`.pkl`) era muito grande (\>1 GB), excedendo os limites de repositórios Git e plataformas de deploy gratuitas.
+2.  **Problema de Memória:** O processo de treinamento do Random Forest consumia mais de 512MB de RAM, estourando o limite do plano gratuito do Render.
 
-3. **Variáveis de ambiente (opcionais):**
-   - `PYTHON_VERSION`: 3.11.0
-   - `PORT`: 5000 (automaticamente configurado pelo Render)
+**Solução Implementada:**
 
-4. **Deploy:**
-   - O modelo será treinado automaticamente durante o build
-   - Aguarde a build (pode levar alguns minutos)
-   - Sua API estará disponível em: `https://your-app-name.onrender.com`
+A solução foi criar um **pipeline de treinamento automático e leve** que é executado durante o build no Render:
 
-#### Como funciona o treinamento automático:
+  - **Modelo Leve:** Substituição do Random Forest pela **Regressão Logística**, cujo arquivo de modelo tem menos de 1 KB.
+  - **Treinamento no Deploy:** Um script `train_lightweight_model.py` foi criado para treinar o modelo e gerar os arquivos `.pkl` dos pré-processadores (scalers, encoders) durante a fase de build no Render.
+  - **Dados Mínimos:** O treinamento no build utiliza uma pequena amostra dos dados (`mini_train.csv`) para garantir que o processo seja rápido e consuma pouca memória.
 
-1. **Durante o build:** O script `train_model.py` é executado
-2. **Se `data/train.csv` existir:** Usa os dados completos para treinar
-3. **Se só `data/sample_train.csv` existir:** Usa dados de exemplo
-4. **Se nenhum dado existir:** Cria um modelo dummy para demonstração
-5. **Durante o start:** O `app.py` verifica se o modelo existe e o carrega
+Essa abordagem resolveu ambos os problemas, permitindo um deploy bem-sucedido, robusto e automatizado.
 
-#### Vantagens desta abordagem:
+## 5\. Como Usar a API
 
-- ✅ Resolve o problema de arquivos grandes no Git
-- ✅ Modelo sempre atualizado com os dados mais recentes
-- ✅ Funciona mesmo sem dados (modo demo)
-- ✅ Deploy mais rápido (não precisa fazer upload de arquivos grandes)
+A API está disponível e pode ser acessada através de requisições POST para o endpoint de predição.
 
-### ⚠️ PROBLEMA DE MEMÓRIA RESOLVIDO!
+### Endpoint
 
-O erro "Out of memory (used over 512Mi)" foi resolvido com otimizações específicas:
+`POST /healthinsurance/predict`
 
-#### 🔧 Otimizações Implementadas:
-
-1. **Modelo Leve**: Logistic Regression ao invés de Random Forest
-2. **Dados Reduzidos**: Usa apenas amostra dos dados para treinamento
-3. **Limpeza de Memória**: Garbage collection automático
-4. **Dependências Otimizadas**: Versões mais leves das bibliotecas
-5. **Transformadores Seguros**: Fallback para casos de erro
-
-#### 📋 Build Commands Otimizados:
-
-**Para Render (recomendado):**
-```bash
-pip install --no-cache-dir -r requirements.txt && python train_lightweight_model.py
-```
-
-**Start Command:**
-```bash
-python app.py
-```
-
-#### 🎯 Características do Modelo Otimizado:
-
-- ✅ **Usa < 300MB de memória** (dentro do limite de 512MB)
-- ✅ **Logistic Regression** (mais leve que Random Forest)
-- ✅ **Dados mini** (5 linhas) para demonstração
-- ✅ **Fallback automático** se falhar
-- ✅ **Limpeza de memória** automática
-- ✅ **Transformadores seguros** com tratamento de erro
-
-### Deploy Automatizado
-
-Use o script de deploy automatizado:
-
-```bash
-# Validar arquivos
-python validate_deploy.py
-
-# Deploy automatizado
-python deploy.py
-```
-
-## Deploy com Docker (Alternativo)
-
-### Desenvolvimento local com Docker
-
-```bash
-# Construir e executar com Docker Compose
-docker-compose up --build
-
-# Ou construir e executar manualmente
-docker build -t health-insurance-api .
-docker run -p 5000:5000 health-insurance-api
-```
-
-### Deploy em plataformas que suportam Docker
-
-1. **Render (Docker):**
-   - Escolha "Docker" em vez de "Web Service"
-   - Use o Dockerfile fornecido
-
-2. **Google Cloud Run:**
-   ```bash
-   # Fazer build da imagem
-   docker build -t gcr.io/seu-projeto/health-insurance-api .
-   
-   # Push para Container Registry
-   docker push gcr.io/seu-projeto/health-insurance-api
-   
-   # Deploy no Cloud Run
-   gcloud run deploy --image gcr.io/seu-projeto/health-insurance-api
-   ```
-
-3. **AWS App Runner:**
-   - Conecte seu repositório GitHub
-   - Configure para usar Dockerfile
-
-## Teste Local
-
-Para testar localmente:
-
-```bash
-# Instalar dependências
-pip install -r requirements.txt
-
-# Executar a API
-python app.py
-
-# Testar endpoints
-curl http://localhost:5000/health
-curl -X POST http://localhost:5000/healthinsurance/predict \
-  -H "Content-Type: application/json" \
-  -d '{"Gender": "Male", "Age": 44, "Driving_License": 1, "Region_Code": 28.0, "Previously_Insured": 0, "Vehicle_Age": "< 1 Year", "Vehicle_Damage": "Yes", "Annual_Premium": 40454.0, "Policy_Sales_Channel": 26.0, "Vintage": 217}'
-```
-
-## Exemplo de Uso em Python
+### Exemplo de Requisição (Python)
 
 ```python
 import requests
 import json
 
-# Dados de exemplo
+# Exemplo com um único cliente
 data = {
     "Gender": "Male",
     "Age": 44,
@@ -235,96 +85,55 @@ data = {
     "Vintage": 217
 }
 
-# Fazer predição
-url = "https://your-app-name.onrender.com/healthinsurance/predict"
+# URL da API (substitua pela sua URL do Render)
+url = "https://SEU-APP.onrender.com/healthinsurance/predict"
 headers = {"Content-Type": "application/json"}
+
 response = requests.post(url, data=json.dumps(data), headers=headers)
 
-print(response.json())
+print(f"Status Code: {response.status_code}")
+print(f"Prediction: {response.json()}")
+
 ```
 
-## Estrutura dos Dados de Entrada
+### Exemplo de Resposta
 
-| Campo | Tipo | Descrição |
-|-------|------|-----------|
-| Gender | string | Gênero do cliente ("Male" ou "Female") |
-| Age | integer | Idade do cliente |
-| Driving_License | integer | Se possui carteira de motorista (0 ou 1) |
-| Region_Code | float | Código da região |
-| Previously_Insured | integer | Se já teve seguro anteriormente (0 ou 1) |
-| Vehicle_Age | string | Idade do veículo ("< 1 Year", "1-2 Year", "> 2 Years") |
-| Vehicle_Damage | string | Se o veículo tem danos ("Yes" ou "No") |
-| Annual_Premium | float | Prêmio anual do seguro |
-| Policy_Sales_Channel | float | Canal de vendas da apólice |
-| Vintage | integer | Número de dias desde que o cliente se associou à empresa |
+A API retorna um JSON com os dados do cliente e a coluna `score`, que representa a probabilidade (de 0 a 1) do cliente ter interesse no seguro de saúde.
 
-## Saída
-
-A API retorna os mesmos dados de entrada mais um campo `score` que representa a probabilidade (0-1) do cliente comprar o seguro de saúde.
-
-## Monitoramento
-
-- Health check: `GET /health`
-- Logs disponíveis no dashboard do Render
-- Métricas de performance no Render
-
-## 🔧 Troubleshooting
-
-### Erro: "FileNotFoundError: model/model_health_insurance.pkl"
-
-**Causa:** O modelo não foi treinado durante o deploy.
-
-**Solução:**
-1. Verifique se o build command inclui: `python train_model.py`
-2. Certifique-se de que os dados estão disponíveis
-3. Verifique os logs do Render para erros durante o treinamento
-
-### Erro durante o treinamento
-
-**Causa:** Problemas com os dados ou dependências.
-
-**Solução:**
-1. Verifique se o arquivo `data/train.csv` existe e é válido
-2. O sistema criará um modelo dummy se não conseguir treinar
-3. Verifique os logs do Render para detalhes
-
-### API retorna erro 500
-
-**Causa:** Problema com o modelo ou transformadores.
-
-**Solução:**
-1. Teste o endpoint `/health` primeiro
-2. Verifique se todos os arquivos .pkl foram criados
-3. Teste com dados de exemplo válidos
-
-### Teste local não funciona
-
-**Solução:**
-```bash
-# Treinar modelo localmente
-python train_model.py
-
-# Testar API
-python app.py
-
-# Em outro terminal
-python test_api.py
+```json
+[
+  {
+    "id": 1,
+    "gender": "Male",
+    "age": 44,
+    // ...outras colunas...
+    "vintage": 217,
+    "response": 1,
+    "score": 0.2375
+  }
+]
 ```
 
-### Build demora muito no Render
+## 6\. Próximos Passos
 
-**Causa:** Treinamento do modelo pode ser demorado.
+  - [ ] Implementar um pipeline de CI/CD para automatizar testes e deploys.
+  - [ ] Experimentar modelos mais robustos (XGBoost, LightGBM) em uma plataforma com mais recursos de memória.
+  - [ ] Realizar mais engenharia de features para melhorar a performance do modelo.
+  - [ ] Conduzir um teste A/B para validar o impacto do modelo nos resultados da campanha.
 
-**Solução:**
-- Use dados de exemplo menores para testes
-- Considere usar um modelo mais simples
-- Monitore os logs do Render
+## 7\. Estrutura do Projeto
 
-### Dados não encontrados
-
-**Solução:**
-1. Coloque `data/train.csv` no repositório
-2. Ou use `data/sample_train.csv` fornecido
-3. O sistema criará modelo dummy se necessário
-
-## 🔍 Monitoramento
+```
+.
+├── app.py                  # Handler da API Flask
+├── requirements.txt        # Dependências Python
+├── train_lightweight_model.py # Script de treinamento para deploy
+├── health_insurance/
+│   └── HealthInsurance.py  # Classe de encapsulamento do pipeline
+├── model/
+│   └── model_health.pkl    # Modelo treinado (gerado no deploy)
+├── parameter/
+│   └── ...                 # Arquivos de pré-processamento (.pkl)
+└── notebooks/
+    └── sales-prediction.ipynb # Notebook de análise e desenvolvimento
+```
