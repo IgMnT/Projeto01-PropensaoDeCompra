@@ -1,0 +1,6 @@
+Gender,Age,Driving_License,Region_Code,Previously_Insured,Vehicle_Age,Vehicle_Damage,Annual_Premium,Policy_Sales_Channel,Vintage,Response
+Male,44,1,28,0,> 2 Years,Yes,40454,26,217,1
+Female,35,1,15,1,1-2 Year,No,25000,152,180,0
+Male,25,1,14,0,< 1 Year,No,30000,152,39,0
+Female,51,1,46,1,< 1 Year,No,31654,152,35,0
+Male,42,1,46,0,> 2 Years,Yes,42248,26,99,1

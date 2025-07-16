@@ -6,11 +6,11 @@ from health_insurance.HealthInsurance import HealthInsurance
 
 # Check if model exists, if not train it
 if not os.path.exists('model/model_health_insurance.pkl'):
-    print("Model not found. Training model...")
+    print("Model not found. Training lightweight model...")
     try:
-        from train_model import train_model
-        train_model()
-        print("Model trained successfully!")
+        from train_lightweight_model import train_lightweight_model
+        train_lightweight_model()
+        print("Lightweight model trained successfully!")
     except Exception as e:
         print(f"Error training model: {e}")
         print("Creating minimal model for demonstration...")
@@ -23,16 +23,16 @@ if not os.path.exists('model/model_health_insurance.pkl'):
         from sklearn.dummy import DummyClassifier
         import numpy as np
         
-        dummy_model = DummyClassifier(strategy='constant', constant=0.5)
-        dummy_model.fit(np.random.random((10, 7)), np.random.randint(0, 2, 10))
+        dummy_model = DummyClassifier(strategy='prior')
+        dummy_model.fit(np.array([[1], [0]]), np.array([1, 0]))
         
         with open('model/model_health_insurance.pkl', 'wb') as f:
             pickle.dump(dummy_model, f)
         
         # Create minimal transformers
-        from sklearn.preprocessing import StandardScaler
-        scaler = StandardScaler()
-        scaler.fit(np.random.random((10, 1)))
+        from sklearn.preprocessing import MinMaxScaler
+        scaler = MinMaxScaler()
+        scaler.fit(np.array([[0], [1]]))
         
         for param_name in ['annual_premium_scaler', 'age_scaler', 'vintage_scaler']:
             with open(f'parameter/{param_name}.pkl', 'wb') as f:

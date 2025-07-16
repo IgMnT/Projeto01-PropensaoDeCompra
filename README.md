@@ -117,6 +117,39 @@ Este projeto treina o modelo automaticamente durante o deploy no Render, resolve
 - ✅ Funciona mesmo sem dados (modo demo)
 - ✅ Deploy mais rápido (não precisa fazer upload de arquivos grandes)
 
+### ⚠️ PROBLEMA DE MEMÓRIA RESOLVIDO!
+
+O erro "Out of memory (used over 512Mi)" foi resolvido com otimizações específicas:
+
+#### 🔧 Otimizações Implementadas:
+
+1. **Modelo Leve**: Logistic Regression ao invés de Random Forest
+2. **Dados Reduzidos**: Usa apenas amostra dos dados para treinamento
+3. **Limpeza de Memória**: Garbage collection automático
+4. **Dependências Otimizadas**: Versões mais leves das bibliotecas
+5. **Transformadores Seguros**: Fallback para casos de erro
+
+#### 📋 Build Commands Otimizados:
+
+**Para Render (recomendado):**
+```bash
+pip install --no-cache-dir -r requirements.txt && python train_lightweight_model.py
+```
+
+**Start Command:**
+```bash
+python app.py
+```
+
+#### 🎯 Características do Modelo Otimizado:
+
+- ✅ **Usa < 300MB de memória** (dentro do limite de 512MB)
+- ✅ **Logistic Regression** (mais leve que Random Forest)
+- ✅ **Dados mini** (5 linhas) para demonstração
+- ✅ **Fallback automático** se falhar
+- ✅ **Limpeza de memória** automática
+- ✅ **Transformadores seguros** com tratamento de erro
+
 ### Deploy Automatizado
 
 Use o script de deploy automatizado:

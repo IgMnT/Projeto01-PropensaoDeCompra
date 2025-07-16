@@ -2,7 +2,7 @@ services:
   - type: web
     name: health-insurance-api
     env: python
-    buildCommand: pip install -r requirements.txt && python train_model.py
+    buildCommand: pip install --no-cache-dir -r requirements.txt && python train_lightweight_model.py
     startCommand: python app.py
     envVars:
       - key: PYTHON_VERSION
